@@ -49,19 +49,15 @@ namespace PacManGame
         /* Default Constructor */
         public Tiles()
         {
-
+            /*** Initialize Tile Grid ***/
+            tile_grid = new TileState [28,36];
         }
 
-        public Tiles(Texture2D empty, Texture2D pellet, Texture2D pill, Texture2D wall,
+        public void load_images(Texture2D empty, Texture2D pellet, Texture2D pill, Texture2D wall,
                      Texture2D up, Texture2D down, Texture2D left, Texture2D right,
                      Texture2D tlc, Texture2D trc, Texture2D blc, Texture2D brc,
                      Texture2D blci, Texture2D brci, Texture2D tlci, Texture2D trci)
         {
-            /*** Initialize Member Variables ***/
-
-            int curr_x = 0;
-            int curr_y = 0;
-            tile_grid = new TileState [28,36];
             empty_image = empty;
             pellet_image = pellet;
             pill_image = pill;
@@ -78,8 +74,13 @@ namespace PacManGame
             wallbrci_image = brci;
             walltlci_image = tlci;
             walltrci_image = trci;
+        }
 
+        public void load_level(){
             /*** Initialize all tiles to Empty ***/
+
+            int curr_x = 0;
+            int curr_y = 0;
 
             for (int i = 0; i < tile_grid.GetLength(0); i++)
             {

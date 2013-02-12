@@ -18,7 +18,7 @@ namespace PacManGame
     {
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
-        Texture2D image;
+        Texture2D pacman;
         Texture2D pellet;
         Texture2D pill;
         Texture2D empty;
@@ -35,7 +35,9 @@ namespace PacManGame
         Texture2D wall_trci;
         Texture2D wall_tlc;
         Texture2D wall_tlci;
+        Texture2D test;
         Tiles game_grid;
+        Pacman player;
         //Texture2D bground;
         KeyboardState curr;
         KeyboardState prev;
@@ -43,9 +45,6 @@ namespace PacManGame
         int world_height;
         int l_dim;
         int p_dim;
-        Vector2 pos;
-        Vector2 pos2;
-        Vector2 vel;
 
         public Game1()
         {
@@ -69,9 +68,8 @@ namespace PacManGame
         {
             // TODO: Add your initialization logic here
 
-            pos = new Vector2(0,0);
-            vel = new Vector2(0, 0);
-            p_dim = 30;
+            //Initialize Member Variables
+            p_dim = 40;
             l_dim = 20;
             world_height = graphics.GraphicsDevice.Viewport.Height;
             world_width = graphics.GraphicsDevice.Viewport.Width;
@@ -88,7 +86,10 @@ namespace PacManGame
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
-            image = Content.Load<Texture2D>("ball");
+            //Initialize the level grid
+            game_grid = new Tiles();
+
+            pacman = Content.Load<Texture2D>("ball");
             empty = Content.Load<Texture2D>("Empty");
             pellet = Content.Load<Texture2D>("Pellet");
             pill = Content.Load<Texture2D>("Pill");
@@ -105,17 +106,25 @@ namespace PacManGame
             wall_tlci = Content.Load<Texture2D>("Wall_tlci");
             wall_trci = Content.Load<Texture2D>("Wall_trci");
             wall_brci = Content.Load<Texture2D>("Wall_brci");
+            test = Content.Load<Texture2D>("Empty2");
 
-            //Initialize the level grid
-            game_grid = new Tiles(empty, pellet, pill, wall, 
+            //Load the images into the level grid
+            game_grid.load_images(empty, pellet, pill, wall, 
                                   wall_up, wall_down, wall_left, wall_right,
                                   wall_tlc, wall_trc, wall_blc, wall_brc, 
                                   wall_blci, wall_brci, wall_tlci, wall_trci);
 
+            //Code the level onto the game grid
+            game_grid.load_level();
+
+                        //Initialize pacman
+            player = new Pacman(p_dim, world_width, world_height, game_grid);
+
             //Set Pac-Man to his starting position
-            pos.X = game_grid.tile_grid[13, 26].pos.X +5;
-            pos.Y = game_grid.tile_grid[13, 26].pos.Y-5;
-            //bground = Content.Load<Texture2D>("Sky");
+            player.pos.X = game_grid.tile_grid[13, 26].pos.X;
+            player.pos.Y = game_grid.tile_grid[13, 26].pos.Y-10;
+            //Set Pacman image
+            player.image = pacman;
 
             // TODO: use this.Content to load your game content here
         }
@@ -140,52 +149,10 @@ namespace PacManGame
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
                 this.Exit();
 
-            pos.X += vel.X;
-            pos.Y -= vel.Y;
-
-            if (pos.X <= 0 || pos.X >= world_width - p_dim)
-            {
-                if (pos.X < 0) pos.X = 0;
-                if (pos.X > world_width - p_dim) pos.X = world_width - p_dim;
-                vel.X = 0;
-            }
-            if (pos.Y <= 0 || pos.Y >= world_height - p_dim)
-            {
-                if (pos.Y < 0) pos.Y = 0;
-                if (pos.Y > world_height - p_dim) pos.Y = world_height - p_dim;
-                vel.Y = 0;
-            }
-
-            curr = Keyboard.GetState();
-
-            if (curr.IsKeyDown(Keys.Up) && prev.IsKeyUp(Keys.Up))
-            {
-                vel.X = 0;
-                vel.Y = 2;
-            }
-
-            if (curr.IsKeyDown(Keys.Down) && prev.IsKeyUp(Keys.Down))
-            {
-                vel.X = 0;
-                vel.Y = -2;
-            }
-
-            if (curr.IsKeyDown(Keys.Left) && prev.IsKeyUp(Keys.Left))
-            {
-                vel.X = -2;
-                vel.Y = 0;
-            }
-
-            if (curr.IsKeyDown(Keys.Right) && prev.IsKeyUp(Keys.Right))
-            {
-                vel.X = 2;
-                vel.Y = 0;
-            }
-
             // TODO: Add your update logic here
 
             base.Update(gameTime);
-            prev = curr;
+            player.Update();
         }
 
         /// <summary>
@@ -198,10 +165,7 @@ namespace PacManGame
 
             // TODO: Add your drawing code here
 
-
             spriteBatch.Begin();
-
-            //spriteBatch.Draw(bground, new Rectangle(0, 0, world_width, world_height), Color.White);
 
             for (int i = 0; i < game_grid.tile_grid.GetLength(0); i++)
             {
@@ -214,7 +178,16 @@ namespace PacManGame
                 }
             }
 
-            spriteBatch.Draw(image, new Rectangle((int)pos.X, (int)pos.Y, p_dim, p_dim), Color.White);
+            Vector2 curr_tile = new Vector2(0, 0);
+            if (player.pos.X > 0) curr_tile.X = (int)((player.pos.X +(p_dim/2)) / 20);
+            else curr_tile.X = 0;
+            if (player.pos.Y > 0) curr_tile.Y = (int)((player.pos.Y+(p_dim / 2)) / 20);
+            else curr_tile.Y = 0;
+
+            spriteBatch.Draw(player.image, new Rectangle((int)player.pos.X, (int)player.pos.Y, p_dim, p_dim), Color.White);
+            spriteBatch.Draw(test, new Rectangle((int)game_grid.tile_grid[(int)curr_tile.X,(int)curr_tile.Y].pos.X,
+                                                 (int)game_grid.tile_grid[(int)curr_tile.X, (int)curr_tile.Y].pos.Y, 
+                                                 l_dim, l_dim), Color.White);
             spriteBatch.End();
 
             base.Draw(gameTime);
