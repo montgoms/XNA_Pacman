@@ -15,7 +15,7 @@ namespace PacManGame
     {
         public Vector2 pos;
         public Texture2D state_image;
-        public int state; //0 = empty, 1 = pellet, 2 = pill, 3 = wall 
+        public int state; //0 = empty, 1 = pellet, 2 = pill, 3 = wall
 
         /* Default Constructor */
         public TileState()
@@ -490,6 +490,25 @@ namespace PacManGame
                     tile_grid[row, col].state = state;
                 }
             }
+        }
+        public void Update_Tile(Vector2 pos, int new_state, Texture2D new_state_image)
+        {
+            tile_grid[(int)pos.X, (int)pos.Y].state = new_state;
+            tile_grid[(int)pos.X, (int)pos.Y].state_image = new_state_image;
+        }
+        public bool pellets_cleared()
+        {
+            for (int i = 0; i < tile_grid.GetLength(0); i++)
+            {
+                for (int j = 0; j < tile_grid.GetLength(1); j++)
+                {
+                    if (tile_grid[i, j].state == 1 || tile_grid[i, j].state == 2)
+                    {
+                        return false;
+                    }
+                }
+            }
+            return true;
         }
     }
 }

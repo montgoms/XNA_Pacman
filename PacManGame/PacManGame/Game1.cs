@@ -36,6 +36,8 @@ namespace PacManGame
         Texture2D wall_tlc;
         Texture2D wall_tlci;
         Texture2D test;
+        SpriteFont font;
+        ulong score;
         Tiles game_grid;
         Pacman player;
         //Texture2D bground;
@@ -89,6 +91,8 @@ namespace PacManGame
             //Initialize the level grid
             game_grid = new Tiles();
 
+            font = Content.Load<SpriteFont>("Score");
+
             pacman = Content.Load<Texture2D>("ball");
             empty = Content.Load<Texture2D>("Empty");
             pellet = Content.Load<Texture2D>("Pellet");
@@ -121,7 +125,7 @@ namespace PacManGame
             player = new Pacman(p_dim, world_width, world_height, game_grid);
 
             //Set Pac-Man to his starting position
-            player.pos.X = game_grid.tile_grid[13, 26].pos.X;
+            player.pos.X = game_grid.tile_grid[13, 26].pos.X+10;
             player.pos.Y = game_grid.tile_grid[13, 26].pos.Y-10;
             //Set Pacman image
             player.image = pacman;
@@ -153,6 +157,30 @@ namespace PacManGame
 
             base.Update(gameTime);
             player.Update();
+            Vector2 curr_tile = new Vector2(0, 0);
+            if (player.pos.X > 0) curr_tile.X = (int)((player.pos.X + (p_dim / 2)) / 20);
+            else curr_tile.X = 0;
+            if (player.pos.Y > 0) curr_tile.Y = (int)((player.pos.Y + (p_dim / 2)) / 20);
+            else curr_tile.Y = 0;
+            if (game_grid.tile_grid[(int)curr_tile.X, (int)curr_tile.Y].state == 1)
+            {
+                player.Update_Tile(curr_tile, 0, empty);
+                game_grid.Update_Tile(curr_tile, 0, empty);
+                score += 100;
+            }
+            if (game_grid.tile_grid[(int)curr_tile.X, (int)curr_tile.Y].state == 2)
+            {
+                player.Update_Tile(curr_tile, 0, empty);
+                game_grid.Update_Tile(curr_tile, 0, empty);
+                score += 250;
+            }
+            if (game_grid.pellets_cleared())
+            {
+                game_grid.load_level();
+                player.pos.X = game_grid.tile_grid[13, 26].pos.X + 10;
+                player.pos.Y = game_grid.tile_grid[13, 26].pos.Y - 10;
+                player.reset_vel();
+            }
         }
 
         /// <summary>
@@ -185,9 +213,10 @@ namespace PacManGame
             else curr_tile.Y = 0;
 
             spriteBatch.Draw(player.image, new Rectangle((int)player.pos.X, (int)player.pos.Y, p_dim, p_dim), Color.White);
-            spriteBatch.Draw(test, new Rectangle((int)game_grid.tile_grid[(int)curr_tile.X,(int)curr_tile.Y].pos.X,
+            /*spriteBatch.Draw(test, new Rectangle((int)game_grid.tile_grid[(int)curr_tile.X,(int)curr_tile.Y].pos.X,
                                                  (int)game_grid.tile_grid[(int)curr_tile.X, (int)curr_tile.Y].pos.Y, 
-                                                 l_dim, l_dim), Color.White);
+                                                 l_dim, l_dim), Color.White);*/
+            spriteBatch.DrawString(font, "Score: " + score, new Vector2(0, 0), Color.White);
             spriteBatch.End();
 
             base.Draw(gameTime);
